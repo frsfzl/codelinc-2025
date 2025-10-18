@@ -5,6 +5,7 @@ import {
     Dimensions,
     Image,
     KeyboardAvoidingView,
+    Linking,
     Platform,
     ScrollView,
     StyleSheet, Text, TextInput,
@@ -215,6 +216,22 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
     Speech.stop();
   };
 
+  const callAbe = async () => {
+    const phoneNumber = '+19896606519'; // Your VAPI phone number
+    const phoneUrl = `tel:${phoneNumber}`;
+    
+    try {
+      const supported = await Linking.canOpenURL(phoneUrl);
+      if (supported) {
+        await Linking.openURL(phoneUrl);
+      } else {
+        console.log('Phone calls are not supported on this device');
+      }
+    } catch (error) {
+      console.error('Error opening phone app:', error);
+    }
+  };
+
   const TypingIndicator = () => (
     <View style={styles.typingContainer}>
       <Image 
@@ -252,6 +269,9 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
             {isSpeaking ? '🔊 Speaking...' : ''}
           </Text>
         </View>
+        <TouchableOpacity onPress={callAbe} style={styles.callBtn}>
+          <Text style={styles.callBtnText}>📞 Call</Text>
+        </TouchableOpacity>
         <TouchableOpacity onPress={clearConversation} style={styles.clearBtn}>
           <Text style={styles.clearBtnText}>Clear</Text>
         </TouchableOpacity>
@@ -399,6 +419,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#27ae60',
     fontWeight: '500',
+  },
+  callBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#27ae60',
+    borderRadius: 16,
+    marginRight: 8,
+  },
+  callBtnText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
   clearBtn: {
     paddingHorizontal: 12,
