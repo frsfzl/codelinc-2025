@@ -146,20 +146,29 @@ export default function LearningScreen() {
           )}
         </View>
         
-        <TouchableOpacity
-          style={[styles.investButton, { borderColor: colors.tint }]}
-          onPress={() => router.push('/(tabs)/investing')}
-          activeOpacity={0.8}
-        >
-          <View style={styles.investContent}>
+        <View style={[styles.investmentSection, { borderColor: colors.tint }]}>
+          <View style={styles.sectionHeader}>
             <IconSymbol name="chart.line.uptrend.xyaxis" size={24} color={colors.tint} />
-            <View style={styles.investText}>
-              <ThemedText style={styles.investTitle}>Start Investing</ThemedText>
-              <ThemedText style={styles.investSubtitle}>Grow your money with smart investments</ThemedText>
+            <View style={styles.sectionHeaderText}>
+              <ThemedText style={styles.sectionTitle}>Long-Term Investing</ThemedText>
+              <ThemedText style={styles.sectionSubtitle}>Build wealth through compound growth</ThemedText>
             </View>
-            <IconSymbol name="chevron.right" size={20} color={colors.icon} />
           </View>
-        </TouchableOpacity>
+          
+          <ThemedText style={styles.investmentDescription}>
+            Time is your greatest asset in investing. Even small amounts can grow significantly over decades through compound interest.
+          </ThemedText>
+          
+          <TouchableOpacity
+            style={[styles.simulatorButton, { backgroundColor: 'black', borderColor: 'white' }]}
+            onPress={() => router.push('/(tabs)/investing')}
+            activeOpacity={0.8}
+          >
+            <IconSymbol name="calculator" size={20} color="white" />
+            <ThemedText style={styles.simulatorButtonText}>💰 Try Investment Simulator</ThemedText>
+            <IconSymbol name="chevron.right" size={16} color="white" />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -282,29 +291,51 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     lineHeight: 16,
   },
-  investButton: {
+  investmentSection: {
     borderRadius: 16,
     borderWidth: 1,
     backgroundColor: 'transparent',
     marginTop: 16,
     marginBottom: 20,
-  },
-  investContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
     padding: 20,
   },
-  investText: {
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionHeaderText: {
     flex: 1,
     marginLeft: 12,
   },
-  investTitle: {
+  sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 2,
   },
-  investSubtitle: {
+  sectionSubtitle: {
     fontSize: 12,
     opacity: 0.7,
+  },
+  investmentDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    opacity: 0.8,
+    marginBottom: 16,
+  },
+  simulatorButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    gap: 8,
+    borderWidth: 2,
+  },
+  simulatorButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
