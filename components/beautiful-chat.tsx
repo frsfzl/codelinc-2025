@@ -38,6 +38,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 
+
   useEffect(() => {
     if (isLoading) {
       Animated.loop(
@@ -180,7 +181,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
   const TypingIndicator = () => (
     <View style={styles.typingContainer}>
       <Image 
-        source={{ uri: 'https://cdn4.iconfinder.com/data/icons/democracy/500/Political_14-512.png' }}
+        source={require('@/lincoln.png')}
         style={styles.avatar}
       />
       <View style={styles.typingBubble}>
@@ -202,21 +203,18 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
       style={styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      {/* Header with Avatar */}
+      {/* Header */}
       <View style={styles.header}>
-        <Image 
-          source={{ uri: 'https://cdn4.iconfinder.com/data/icons/democracy/500/Political_14-512.png' }}
-          style={styles.headerAvatar}
-        />
+        {messages.length > 0 && (
+          <TouchableOpacity onPress={() => setMessages([])} style={styles.backBtn}>
+            <Text style={styles.backBtnText}>← Back</Text>
+          </TouchableOpacity>
+        )}
         <View style={styles.headerInfo}>
-          <Text style={styles.headerName}>Abe</Text>
           <Text style={styles.headerStatus}>
             {isSpeaking ? '🔊 Speaking...' : ''}
           </Text>
         </View>
-        <TouchableOpacity onPress={callAbe} style={styles.callBtn}>
-          <Text style={styles.callBtnText}>📞 Call</Text>
-        </TouchableOpacity>
         <TouchableOpacity onPress={clearConversation} style={styles.clearBtn}>
           <Text style={styles.clearBtnText}>Clear</Text>
         </TouchableOpacity>
@@ -232,22 +230,26 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
         {messages.length === 0 ? (
           <View style={styles.welcomeContainer}>
             <Image 
-              source={{ uri: 'https://cdn4.iconfinder.com/data/icons/democracy/500/Political_14-512.png' }}
-              style={styles.welcomeAvatar}
+              source={require('@/lincoln.png')}
+              style={styles.welcomeImage}
             />
-            <Text style={styles.welcomeTitle}>Welcome to Abe Chat!</Text>
-            <Text style={styles.welcomeSubtitle}>
-              Your AI assistant powered by Lincoln Financial's knowledge base. Ask me about financial planning, retirement, insurance, and more!
-            </Text>
-            <TouchableOpacity
-              style={[styles.startButton, isLoading && styles.disabledButton]}
-              onPress={startConversation}
-              disabled={isLoading}
-            >
-              <Text style={styles.startButtonText}>
-                {isLoading ? 'Starting...' : '✨ Start Conversation'}
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.callButton}
+                onPress={callAbe}
+              >
+                <Text style={styles.callButtonText}>📞 Call Abe</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.chatButton}
+                onPress={startConversation}
+                disabled={isLoading}
+              >
+                <Text style={styles.chatButtonText}>
+                  {isLoading ? 'Starting...' : '💬 Start Chat'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           <>
@@ -261,7 +263,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
               >
                 {!message.isUser && (
                   <Image 
-                    source={{ uri: 'https://cdn4.iconfinder.com/data/icons/democracy/500/Political_14-512.png' }}
+                    source={require('@/lincoln.png')}
                     style={styles.messageAvatar}
                   />
                 )}
@@ -365,6 +367,18 @@ const styles = StyleSheet.create({
     color: '#27ae60',
     fontWeight: '500',
   },
+  backBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#34495e',
+    borderRadius: 16,
+    marginRight: 12,
+  },
+  backBtnText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   callBtn: {
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -398,44 +412,55 @@ const styles = StyleSheet.create({
   },
   welcomeContainer: {
     alignItems: 'center',
-    paddingVertical: 40,
+    justifyContent: 'center',
+    flex: 1,
+    paddingVertical: 60,
   },
-  welcomeAvatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginBottom: 20,
+  welcomeImage: {
+    width: 320,
+    height: 320,
+    resizeMode: 'contain',
+    marginBottom: 40,
   },
-  welcomeTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#000000',
-    marginBottom: 8,
-    textAlign: 'center',
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 20,
   },
-  welcomeSubtitle: {
-    fontSize: 16,
-    color: '#333333',
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 30,
-    paddingHorizontal: 20,
-  },
-  startButton: {
-    backgroundColor: '#3498db',
-    paddingHorizontal: 30,
+  callButton: {
+    backgroundColor: '#27ae60',
+    paddingHorizontal: 25,
     paddingVertical: 15,
     borderRadius: 25,
-    shadowColor: 'transparent',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0,
-    shadowRadius: 0,
-    elevation: 0,
+    shadowColor: '#27ae60',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+    minWidth: 120,
   },
-  startButtonText: {
+  callButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+    textAlign: 'center',
+  },
+  chatButton: {
+    backgroundColor: '#3498db',
+    paddingHorizontal: 25,
+    paddingVertical: 15,
+    borderRadius: 25,
+    shadowColor: '#3498db',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+    minWidth: 120,
+  },
+  chatButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   messageContainer: {
     flexDirection: 'row',
