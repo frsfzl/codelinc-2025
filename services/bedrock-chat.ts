@@ -7,7 +7,10 @@ const MODEL_ARN = 'arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-
 
 // For now, we'll use a simple proxy endpoint or direct API call
 // You'll need to set up AWS credentials or use a backend proxy
-const BEDROCK_PROXY_ENDPOINT = 'https://dsniwxccj3.execute-api.us-east-1.amazonaws.com/teststage/search';
+const BEDROCK_PROXY_ENDPOINT = 'https://dsniwxccj3.execute-api.us-east-1.amazonaws.com/new/search';
+
+// Add your API key here (get this from AWS API Gateway Console)
+const API_KEY = '7ULKPjwbjk3p2ar84En839yBcqemwMtvByKtBRg0'; // API Gateway API key
 
 class BedrockKBChat {
   /**
@@ -65,6 +68,7 @@ class BedrockKBChat {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-api-key': API_KEY, // Add the API key header
         },
         body: JSON.stringify({ query: enhancedQuery }),
       });
