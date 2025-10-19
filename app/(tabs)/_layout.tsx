@@ -13,6 +13,12 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarInactiveTintColor: '#687076',
+        tabBarStyle: {
+          backgroundColor: colorScheme === 'dark' ? '#231F20' : '#ffffff',
+          borderTopColor: '#98012E',
+          borderTopWidth: 1,
+        },
         headerShown: false,
         tabBarButton: HapticTab,
       }}>
@@ -28,6 +34,13 @@ export default function TabLayout() {
         options={{
           title: 'Learning',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="book.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="investing"
+        options={{
+          title: 'Investing',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="chart.line.uptrend.xyaxis" color={color} />,
         }}
       />
       <Tabs.Screen

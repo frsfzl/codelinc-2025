@@ -220,7 +220,7 @@ export default function InvestingScreen() {
               onPress={() => setStep('years')}
               disabled={remaining < 0}
             >
-              <ThemedText style={[styles.buttonText, { color: remaining >= 0 ? 'black' : 'white' }]}>Continue</ThemedText>
+              <ThemedText style={[styles.buttonText, { color: remaining >= 0 ? 'white' : 'white' }]}>Continue</ThemedText>
             </TouchableOpacity>
           </>
         )}
@@ -277,7 +277,7 @@ export default function InvestingScreen() {
                 style={[styles.simulateButton, { backgroundColor: colors.tint }]}
                 onPress={runSimulation}
               >
-                <ThemedText style={[styles.buttonText, { color: 'black' }]}>Simulate Growth</ThemedText>
+                <ThemedText style={[styles.buttonText, { color: 'white' }]}>Simulate Growth</ThemedText>
               </TouchableOpacity>
             </View>
           </>
@@ -341,7 +341,7 @@ export default function InvestingScreen() {
               style={[styles.resetButton, { backgroundColor: colors.tint }]}
               onPress={resetSimulation}
             >
-              <ThemedText style={[styles.buttonText, { color: 'black' }]}>Try Again</ThemedText>
+              <ThemedText style={[styles.buttonText, { color: 'white' }]}>Try Again</ThemedText>
             </TouchableOpacity>
           </>
         )}
@@ -442,7 +442,7 @@ export default function InvestingScreen() {
               style={[styles.backButtonGraph, { backgroundColor: colors.tint }]}
               onPress={() => setStep('results')}
             >
-              <ThemedText style={[styles.buttonText, { color: 'black' }]}>Back to Results</ThemedText>
+              <ThemedText style={[styles.buttonText, { color: 'white' }]}>Back to Results</ThemedText>
             </TouchableOpacity>
           </>
         )}
