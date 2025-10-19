@@ -36,3 +36,11 @@ export const setPortfolio = async (portfolio: any[]): Promise<void> => {
     console.error('Error saving portfolio:', error);
   }
 };
+
+export const resetBalance = async (): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(BALANCE_KEY, '0');
+  } catch (error) {
+    console.error('Error resetting balance:', error);
+  }
+};

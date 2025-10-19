@@ -4,10 +4,10 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { getBalance, setBalance } from '@/utils/storage';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { Alert, Image, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { getBalance, setBalance } from '@/utils/storage';
 
 const modules = [
   {
@@ -49,18 +49,16 @@ export default function LearningScreen() {
       };
       loadBalance();
       
-      if (params.coins !== undefined && params.coins !== '') {
-        const newCoins = parseInt(params.coins as string, 10);
-        if (!isNaN(newCoins)) {
+      if (params.finalCoins !== undefined && params.finalCoins !== '') {
+        const finalCoins = parseInt(params.finalCoins as string, 10);
+        if (!isNaN(finalCoins)) {
           const updateBalance = async () => {
-            const currentBalance = await getBalance();
-            const newBalance = currentBalance + newCoins;
-            await setBalance(newBalance);
-            setBalanceState(newBalance);
+            await setBalance(finalCoins);
+            setBalanceState(finalCoins);
           };
           updateBalance();
         }
-        router.setParams({ coins: '' });
+        router.setParams({ finalCoins: '' });
       }
     }, [params])
   );
@@ -75,13 +73,7 @@ export default function LearningScreen() {
     }
   };
 
-  const addTestPennies = async () => {
-    const currentBalance = await getBalance();
-    const newBalance = currentBalance + 1000;
-    await setBalance(newBalance);
-    setBalanceState(newBalance);
-    Alert.alert('Success', 'Added 1000 pennies for testing!');
-  };
+
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
@@ -92,12 +84,7 @@ export default function LearningScreen() {
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.balanceSection}>
-          <View style={styles.balanceHeader}>
-            <ThemedText style={styles.balanceTitle}>Balance</ThemedText>
-            <TouchableOpacity style={styles.testButton} onPress={addTestPennies}>
-              <ThemedText style={styles.testButtonText}>+1000</ThemedText>
-            </TouchableOpacity>
-          </View>
+          <ThemedText style={styles.balanceTitle}>Balance</ThemedText>
           <View style={styles.balanceRow}>
             <Image source={require('@/assets/images/penny.png')} style={styles.balancePenny} />
             <ThemedText style={styles.balanceAmount}>{balance}</ThemedText>
@@ -146,20 +133,29 @@ export default function LearningScreen() {
           )}
         </View>
         
-        <TouchableOpacity
-          style={[styles.investButton, { borderColor: colors.tint }]}
-          onPress={() => router.push('/(tabs)/investing')}
-          activeOpacity={0.8}
-        >
-          <View style={styles.investContent}>
+        <View style={[styles.investmentSection, { borderColor: colors.tint }]}>
+          <View style={styles.sectionHeader}>
             <IconSymbol name="chart.line.uptrend.xyaxis" size={24} color={colors.tint} />
-            <View style={styles.investText}>
-              <ThemedText style={styles.investTitle}>Start Investing</ThemedText>
-              <ThemedText style={styles.investSubtitle}>Grow your money with smart investments</ThemedText>
+            <View style={styles.sectionHeaderText}>
+              <ThemedText style={styles.sectionTitle}>Long-Term Investing</ThemedText>
+              <ThemedText style={styles.sectionSubtitle}>Build wealth through compound growth</ThemedText>
             </View>
-            <IconSymbol name="chevron.right" size={20} color={colors.icon} />
           </View>
-        </TouchableOpacity>
+          
+          <ThemedText style={styles.investmentDescription}>
+            Time is your greatest asset in investing. Even small amounts can grow significantly over decades through compound interest.
+          </ThemedText>
+          
+          <TouchableOpacity
+            style={[styles.simulatorButton, { backgroundColor: 'black', borderColor: 'white' }]}
+            onPress={() => router.push('/(tabs)/investing')}
+            activeOpacity={0.8}
+          >
+            <IconSymbol name="calculator" size={20} color="white" />
+            <ThemedText style={styles.simulatorButtonText}>💰 Try Investment Simulator</ThemedText>
+            <IconSymbol name="chevron.right" size={16} color="white" />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -192,28 +188,12 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     marginBottom: 20,
   },
-  balanceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 12,
-  },
+
   balanceTitle: {
     fontSize: 18,
     fontWeight: '600',
   },
-  testButton: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  testButtonText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-  },
+
   balanceRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -282,29 +262,52 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     lineHeight: 16,
   },
-  investButton: {
+  investmentSection: {
     borderRadius: 16,
     borderWidth: 1,
     backgroundColor: 'transparent',
     marginTop: 16,
     marginBottom: 20,
-  },
-  investContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
     padding: 20,
   },
-  investText: {
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionHeaderText: {
     flex: 1,
     marginLeft: 12,
   },
-  investTitle: {
+  sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 2,
   },
-  investSubtitle: {
+  sectionSubtitle: {
     fontSize: 12,
     opacity: 0.7,
   },
+  investmentDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    opacity: 0.8,
+    marginBottom: 16,
+  },
+  simulatorButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    gap: 8,
+    borderWidth: 2,
+  },
+  simulatorButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
 });
