@@ -1,4 +1,5 @@
 import bedrockChat from '@/services/bedrock-chat';
+import database from '@/services/database';
 import * as Speech from 'expo-speech';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -12,6 +13,7 @@ import {
   StyleSheet, Text, TextInput,
   TouchableOpacity, View
 } from 'react-native';
+import OnboardingQuestionnaire from './onboarding-questionnaire';
 
 const { width } = Dimensions.get('window');
 
@@ -32,6 +34,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showPalmUp, setShowPalmUp] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const typingAnimation = new Animated.Value(0);
   
@@ -46,6 +49,21 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
+
+  useEffect(() => {
+    checkOnboardingStatus();
+  }, []);
+
+  const checkOnboardingStatus = async () => {
+    try {
+      const hasCompleted = await database.hasCompletedOnboarding();
+      if (!hasCompleted) {
+        setShowOnboarding(true);
+      }
+    } catch (error) {
+      console.error('Error checking onboarding status:', error);
+    }
+  };
 
 
   useEffect(() => {
@@ -209,6 +227,11 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
     Speech.stop();
   };
 
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+  };
+
+
   const callAbe = async () => {
     const phoneNumber = '+19896606519'; // Your VAPI phone number
     const phoneUrl = `tel:${phoneNumber}`;
@@ -223,6 +246,38 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
     } catch (error) {
       console.error('Error opening phone app:', error);
     }
+  };
+
+  const renderClickableText = (text: string, isUser: boolean) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    
+    return parts.map((part, index) => {
+      if (urlRegex.test(part)) {
+        return (
+          <TouchableOpacity
+            key={index}
+            onPress={() => Linking.openURL(part)}
+          >
+            <Text style={[
+              styles.messageText,
+              isUser ? styles.userText : styles.assistantText,
+              styles.linkText
+            ]}>
+              {part}
+            </Text>
+          </TouchableOpacity>
+        );
+      }
+      return (
+        <Text key={index} style={[
+          styles.messageText,
+          isUser ? styles.userText : styles.assistantText,
+        ]}>
+          {part}
+        </Text>
+      );
+    });
   };
 
   const TypingIndicator = () => (
@@ -244,6 +299,10 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
       </View>
     </View>
   );
+
+  if (showOnboarding) {
+    return <OnboardingQuestionnaire onComplete={handleOnboardingComplete} />;
+  }
 
   return (
     <KeyboardAvoidingView 
@@ -370,12 +429,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
                       message.isUser ? styles.userBubble : styles.assistantBubble,
                     ]}
                   >
-                    <Text style={[
-                      styles.messageText,
-                      message.isUser ? styles.userText : styles.assistantText,
-                    ]}>
-                      {message.text}
-                    </Text>
+                    {renderClickableText(message.text, message.isUser)}
                     <Text style={[
                       styles.timestamp,
                       message.isUser ? styles.userTimestamp : styles.assistantTimestamp,
@@ -637,6 +691,10 @@ const styles = StyleSheet.create({
   },
   assistantText: {
     color: '#000000',
+  },
+  linkText: {
+    color: '#3498db',
+    textDecorationLine: 'underline',
   },
   timestamp: {
     fontSize: 11,
