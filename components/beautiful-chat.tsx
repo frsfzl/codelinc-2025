@@ -2,15 +2,15 @@ import bedrockChat from '@/services/bedrock-chat';
 import * as Speech from 'expo-speech';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Animated,
-    Dimensions,
-    Image,
-    KeyboardAvoidingView,
-    Linking,
-    Platform,
-    ScrollView,
-    StyleSheet, Text, TextInput,
-    TouchableOpacity, View
+  Animated,
+  Dimensions,
+  Image,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  ScrollView,
+  StyleSheet, Text, TextInput,
+  TouchableOpacity, View
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -31,8 +31,17 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showPalmUp, setShowPalmUp] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const typingAnimation = new Animated.Value(0);
+  
+  // Animation for crossfade between images
+  const firstImageOpacity = useRef(new Animated.Value(1)).current;
+  const secondImageOpacity = useRef(new Animated.Value(0)).current;
+  
+  // Animation for slide down
+  const imageSlideDown = useRef(new Animated.Value(0)).current;
+  const chatSlideIn = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -127,38 +136,76 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
   const startConversation = async () => {
     if (messages.length > 0) return;
 
+    console.log('Starting crossfade animation...');
     setIsLoading(true);
     
-    try {
-      const welcomeMessage: Message = {
-        id: Date.now().toString(),
-        text: "Hi! I'm Abe, your AI assistant powered by Lincoln Financial's knowledge base. I can help you with questions about financial planning, retirement, insurance, and more. What would you like to know?",
-        isUser: false,
-        timestamp: new Date(),
-      };
-
-      setMessages([welcomeMessage]);
-      await speakText(welcomeMessage.text);
-
-    } catch (error) {
-      console.error('Error starting conversation:', error);
+    // Step 1: Crossfade to palm up image
+    // First image fades out while second image fades in simultaneously
+    Animated.parallel([
+      Animated.timing(firstImageOpacity, {
+        toValue: 0,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(secondImageOpacity, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      })
+    ]).start(() => {
+      console.log('Crossfade complete, starting slide down animation...');
       
-      const welcomeMessage: Message = {
-        id: Date.now().toString(),
-        text: "Hi! I'm Abe, your AI assistant. How can I help you today?",
-        isUser: false,
-        timestamp: new Date(),
-      };
+      // Step 2: Lincoln slides down out of screen while message slides in from top
+      setTimeout(() => {
+        // Lincoln slides down and out of screen
+        Animated.timing(imageSlideDown, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }).start(() => {
+          console.log('Slide animation complete, starting conversation...');
+          
+          // Step 3: Slide in the chat interface from top
+          setTimeout(() => {
+            try {
+              const welcomeMessage: Message = {
+                id: Date.now().toString(),
+                text: "Hi! I'm Abe, your AI assistant powered by Lincoln Financial's knowledge base. I can help you with questions about financial planning, retirement, insurance, and more. What would you like to know?",
+                isUser: false,
+                timestamp: new Date(),
+              };
 
-      setMessages([welcomeMessage]);
-      await speakText(welcomeMessage.text);
-    } finally {
-      setIsLoading(false);
-    }
+              setMessages([welcomeMessage]);
+              speakText(welcomeMessage.text);
+              setIsLoading(false);
+
+            } catch (error) {
+              console.error('Error starting conversation:', error);
+              
+              const welcomeMessage: Message = {
+                id: Date.now().toString(),
+                text: "Hi! I'm Abe, your AI assistant. How can I help you today?",
+                isUser: false,
+                timestamp: new Date(),
+              };
+
+              setMessages([welcomeMessage]);
+              speakText(welcomeMessage.text);
+              setIsLoading(false);
+            }
+          }, 300); // Small delay before chat slides in
+        });
+      }, 800); // Delay to show the palm up image before sliding
+    });
   };
 
   const clearConversation = () => {
     setMessages([]);
+    setShowPalmUp(false);
+    firstImageOpacity.setValue(1);
+    secondImageOpacity.setValue(0);
+    imageSlideDown.setValue(0);
+    chatSlideIn.setValue(0);
     Speech.stop();
   };
 
@@ -221,83 +268,134 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
       </View>
 
       {/* Chat Messages */}
-      <ScrollView 
-        ref={scrollViewRef}
-        style={styles.messagesContainer}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.messagesContent}
-      >
-        {messages.length === 0 ? (
-          <View style={styles.welcomeContainer}>
-            <Image 
-              source={require('@/lincoln.png')}
-              style={styles.welcomeImage}
-            />
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.callButton}
-                onPress={callAbe}
-              >
-                <Text style={styles.callButtonText}>📞 Call Abe</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.chatButton}
-                onPress={startConversation}
-                disabled={isLoading}
-              >
-                <Text style={styles.chatButtonText}>
-                  {isLoading ? 'Starting...' : '💬 Start Chat'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : (
-          <>
-            {messages.map((message) => (
-              <View
-                key={message.id}
-                style={[
-                  styles.messageContainer,
-                  message.isUser ? styles.userMessageContainer : styles.assistantMessageContainer,
-                ]}
-              >
-                {!message.isUser && (
-                  <Image 
-                    source={require('@/lincoln.png')}
-                    style={styles.messageAvatar}
-                  />
-                )}
-                <View
+      <View style={styles.messagesContainer}>
+        <ScrollView 
+          ref={scrollViewRef}
+          style={{ flex: 1 }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.messagesContent}
+        >
+          {messages.length === 0 ? (
+            <View style={styles.welcomeContainer}>
+              <View style={styles.imageContainer}>
+                {/* First Lincoln image - fades out and slides down */}
+                <Animated.Image 
+                  source={require('@/lincoln.png')}
                   style={[
-                    styles.messageBubble,
-                    message.isUser ? styles.userBubble : styles.assistantBubble,
+                    styles.welcomeImage,
+                    { 
+                      opacity: firstImageOpacity,
+                      transform: [
+                        {
+                          translateY: imageSlideDown.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0, 800]
+                          })
+                        }
+                      ]
+                    }
+                  ]}
+                />
+                
+                {/* Second Lincoln image (palm up) - fades in and slides down */}
+                <Animated.Image 
+                  source={require('@/linconl_palm_up.png')}
+                  style={[
+                    styles.welcomeImage,
+                    { 
+                      opacity: secondImageOpacity,
+                      transform: [
+                        {
+                          translateY: imageSlideDown.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0, 800]
+                          })
+                        }
+                      ]
+                    }
+                  ]}
+                />
+                
+              </View>
+              
+              <Animated.View style={[
+                styles.buttonContainer,
+                {
+                  transform: [
+                    {
+                      translateY: imageSlideDown.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, 800]
+                      })
+                    }
+                  ]
+                }
+              ]}>
+                <TouchableOpacity
+                  style={styles.callButton}
+                  onPress={callAbe}
+                >
+                  <Text style={styles.callButtonText}>📞 Call Abe</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.chatButton}
+                  onPress={startConversation}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.chatButtonText}>
+                    {isLoading ? 'Starting...' : '💬 Start Chat'}
+                  </Text>
+                </TouchableOpacity>
+              </Animated.View>
+            </View>
+          ) : (
+            <>
+              {messages.map((message) => (
+                <View
+                  key={message.id}
+                  style={[
+                    styles.messageContainer,
+                    message.isUser ? styles.userMessageContainer : styles.assistantMessageContainer,
                   ]}
                 >
-                  <Text style={[
-                    styles.messageText,
-                    message.isUser ? styles.userText : styles.assistantText,
-                  ]}>
-                    {message.text}
-                  </Text>
-                  <Text style={[
-                    styles.timestamp,
-                    message.isUser ? styles.userTimestamp : styles.assistantTimestamp,
-                  ]}>
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </Text>
-                </View>
-                {message.isUser && (
-                  <View style={styles.userAvatar}>
-                    <Text style={styles.userAvatarText}>You</Text>
+                  {!message.isUser && (
+                    <Image 
+                      source={require('@/lincoln.png')}
+                      style={styles.messageAvatar}
+                    />
+                  )}
+                  <View
+                    style={[
+                      styles.messageBubble,
+                      message.isUser ? styles.userBubble : styles.assistantBubble,
+                    ]}
+                  >
+                    <Text style={[
+                      styles.messageText,
+                      message.isUser ? styles.userText : styles.assistantText,
+                    ]}>
+                      {message.text}
+                    </Text>
+                    <Text style={[
+                      styles.timestamp,
+                      message.isUser ? styles.userTimestamp : styles.assistantTimestamp,
+                    ]}>
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </Text>
                   </View>
-                )}
-              </View>
-            ))}
-            
-            {isLoading && <TypingIndicator />}
-          </>
-        )}
-      </ScrollView>
+                  {message.isUser && (
+                    <View style={styles.userAvatar}>
+                      <Text style={styles.userAvatarText}>You</Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+              
+              {isLoading && <TypingIndicator />}
+            </>
+          )}
+        </ScrollView>
+      </View>
 
       {/* Input Area */}
       <View style={styles.inputContainer}>
@@ -352,6 +450,13 @@ const styles = StyleSheet.create({
     height: 45,
     borderRadius: 22.5,
     marginRight: 12,
+  },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8,
+    marginBottom: 4,
   },
   headerInfo: {
     flex: 1,
@@ -414,13 +519,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
-    paddingVertical: 60,
+    paddingTop: 200,
+    paddingBottom: 150,
+  },
+  imageContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 140,
   },
   welcomeImage: {
-    width: 320,
-    height: 320,
+    width: 300,
+    height: 300,
     resizeMode: 'contain',
-    marginBottom: 40,
+    position: 'absolute',
   },
   buttonContainer: {
     flexDirection: 'row',
