@@ -390,6 +390,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
           style={{ flex: 1 }}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.messagesContent}
+          scrollEnabled={messages.length > 0}
         >
           {messages.length === 0 ? (
               <View style={styles.welcomeContainer}>
