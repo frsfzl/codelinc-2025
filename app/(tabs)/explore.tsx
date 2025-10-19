@@ -3,6 +3,7 @@ import database from '@/services/database';
 import React, { useEffect, useState } from 'react';
 import {
     Alert,
+    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -56,47 +57,79 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Settings</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Settings</Text>
+      </View>
       
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Profile Management</Text>
-        
-        {hasProfile ? (
-          <View style={styles.optionsContainer}>
-            <TouchableOpacity 
-              style={styles.optionButton}
-              onPress={() => setShowProfileSettings(true)}
-            >
-              <Text style={styles.optionButtonText}>Edit Profile</Text>
-              <Text style={styles.optionDescription}>Update your personal and financial information</Text>
-            </TouchableOpacity>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Profile Management</Text>
+            </View>
             
-            <TouchableOpacity 
-              style={[styles.optionButton, styles.dangerButton]}
-              onPress={resetProfile}
-            >
-              <Text style={[styles.optionButtonText, styles.dangerButtonText]}>Reset Profile</Text>
-              <Text style={styles.optionDescription}>Delete your profile and start over</Text>
-            </TouchableOpacity>
+            {hasProfile ? (
+              <View style={styles.optionsContainer}>
+                <TouchableOpacity 
+                  style={styles.optionButton}
+                  onPress={() => setShowProfileSettings(true)}
+                >
+                  <View style={styles.optionIcon}>
+                    <Text style={styles.optionIconText}>👤</Text>
+                  </View>
+                  <View style={styles.optionContent}>
+                    <Text style={styles.optionButtonText}>Edit Profile</Text>
+                    <Text style={styles.optionDescription}>Update your personal and financial information</Text>
+                  </View>
+                  <Text style={styles.optionArrow}>›</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[styles.optionButton, styles.dangerButton]}
+                  onPress={resetProfile}
+                >
+                  <View style={styles.optionIcon}>
+                    <Text style={styles.optionIconText}>🗑️</Text>
+                  </View>
+                  <View style={styles.optionContent}>
+                    <Text style={[styles.optionButtonText, styles.dangerButtonText]}>Reset Profile</Text>
+                    <Text style={styles.optionDescription}>Delete your profile and start over</Text>
+                  </View>
+                  <Text style={styles.optionArrow}>›</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.noProfileContainer}>
+                <Text style={styles.noProfileIcon}>📝</Text>
+                <Text style={styles.noProfileText}>No profile found</Text>
+                <Text style={styles.noProfileDescription}>
+                  Complete the onboarding questionnaire to create your profile
+                </Text>
+              </View>
+            )}
           </View>
-        ) : (
-          <View style={styles.noProfileContainer}>
-            <Text style={styles.noProfileText}>No profile found</Text>
-            <Text style={styles.noProfileDescription}>
-              Complete the onboarding questionnaire to create your profile
-            </Text>
-          </View>
-        )}
-      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>App Information</Text>
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoText}>Abe - AI Financial Assistant</Text>
-          <Text style={styles.infoText}>Powered by Lincoln Financial</Text>
-          <Text style={styles.infoText}>Version 1.0.0</Text>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>App Information</Text>
+            </View>
+            <View style={styles.infoContainer}>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>App Name</Text>
+                <Text style={styles.infoValue}>Abe - AI Financial Assistant</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Powered by</Text>
+                <Text style={styles.infoValue}>Lincoln Financial</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Version</Text>
+                <Text style={styles.infoValue}>1.0.0</Text>
+              </View>
+            </View>
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -105,79 +138,141 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+  },
+  header: {
+    backgroundColor: '#ffffff',
     paddingTop: 50,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e1e8ed',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '700',
+    color: '#202124',
     textAlign: 'center',
-    marginBottom: 30,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    padding: 16,
   },
   section: {
-    marginBottom: 30,
-    paddingHorizontal: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  sectionHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f3f4',
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 15,
+    color: '#202124',
   },
   optionsContainer: {
-    gap: 12,
+    paddingVertical: 8,
   },
   optionButton: {
-    backgroundColor: '#f8f9fa',
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#ffffff',
+  },
+  optionIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f1f3f4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  optionIconText: {
+    fontSize: 16,
+  },
+  optionContent: {
+    flex: 1,
   },
   optionButtonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    fontWeight: '500',
+    color: '#202124',
+    marginBottom: 2,
   },
   optionDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#5f6368',
+  },
+  optionArrow: {
+    fontSize: 18,
+    color: '#5f6368',
+    fontWeight: '300',
   },
   dangerButton: {
     backgroundColor: '#fff5f5',
-    borderColor: '#fed7d7',
   },
   dangerButtonText: {
-    color: '#e53e3e',
+    color: '#ea4335',
   },
   noProfileContainer: {
-    backgroundColor: '#f8f9fa',
-    padding: 20,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    alignItems: 'center',
+    paddingVertical: 32,
+    paddingHorizontal: 16,
+  },
+  noProfileIcon: {
+    fontSize: 32,
+    marginBottom: 12,
   },
   noProfileText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#202124',
     marginBottom: 4,
   },
   noProfileDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#5f6368',
+    textAlign: 'center',
+    lineHeight: 20,
   },
   infoContainer: {
-    backgroundColor: '#f8f9fa',
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    paddingVertical: 8,
   },
-  infoText: {
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f3f4',
+  },
+  infoLabel: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
+    color: '#5f6368',
+    fontWeight: '500',
+  },
+  infoValue: {
+    fontSize: 14,
+    color: '#202124',
+    fontWeight: '500',
   },
 });

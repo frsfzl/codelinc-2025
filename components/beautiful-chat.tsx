@@ -183,35 +183,50 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
         }).start(() => {
           console.log('Slide animation complete, starting conversation...');
           
-          // Step 3: Slide in the chat interface from top
-          setTimeout(() => {
-            try {
-              const welcomeMessage: Message = {
-                id: Date.now().toString(),
-                text: "Hi! I'm Abe, your AI assistant powered by Lincoln Financial's knowledge base. I can help you with questions about financial planning, retirement, insurance, and more. What would you like to know?",
-                isUser: false,
-                timestamp: new Date(),
-              };
+              // Step 3: Slide in the chat interface from top
+              setTimeout(() => {
+                try {
+                  const welcomeMessage: Message = {
+                    id: Date.now().toString(),
+                    text: "Hi! I'm Abe, your AI assistant powered by Lincoln Financial's knowledge base. I can help you with questions about financial planning, retirement, insurance, and more. What would you like to know?",
+                    isUser: false,
+                    timestamp: new Date(),
+                  };
 
-              setMessages([welcomeMessage]);
-              speakText(welcomeMessage.text);
-              setIsLoading(false);
+                  // Start with message off-screen at the top
+                  setMessages([welcomeMessage]);
+                  
+                  // Animate the chat sliding in from top
+                  Animated.timing(chatSlideIn, {
+                    toValue: 1,
+                    duration: 800,
+                    useNativeDriver: true,
+                  }).start(() => {
+                    speakText(welcomeMessage.text);
+                    setIsLoading(false);
+                  });
 
-            } catch (error) {
-              console.error('Error starting conversation:', error);
-              
-              const welcomeMessage: Message = {
-                id: Date.now().toString(),
-                text: "Hi! I'm Abe, your AI assistant. How can I help you today?",
-                isUser: false,
-                timestamp: new Date(),
-              };
+                } catch (error) {
+                  console.error('Error starting conversation:', error);
+                  
+                  const welcomeMessage: Message = {
+                    id: Date.now().toString(),
+                    text: "Hi! I'm Abe, your AI assistant. How can I help you today?",
+                    isUser: false,
+                    timestamp: new Date(),
+                  };
 
-              setMessages([welcomeMessage]);
-              speakText(welcomeMessage.text);
-              setIsLoading(false);
-            }
-          }, 300); // Small delay before chat slides in
+                  setMessages([welcomeMessage]);
+                  Animated.timing(chatSlideIn, {
+                    toValue: 1,
+                    duration: 800,
+                    useNativeDriver: true,
+                  }).start(() => {
+                    speakText(welcomeMessage.text);
+                    setIsLoading(false);
+                  });
+                }
+              }, 300); // Small delay before chat slides in
         });
       }, 800); // Delay to show the palm up image before sliding
     });
@@ -225,6 +240,10 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
     imageSlideDown.setValue(0);
     chatSlideIn.setValue(0);
     Speech.stop();
+  };
+
+  const goBackToHome = () => {
+    clearConversation();
   };
 
   const handleOnboardingComplete = () => {
@@ -311,19 +330,16 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
     >
       {/* Header */}
       <View style={styles.header}>
-        {messages.length > 0 && (
-          <TouchableOpacity onPress={() => setMessages([])} style={styles.backBtn}>
-            <Text style={styles.backBtnText}>← Back</Text>
-          </TouchableOpacity>
-        )}
+            {messages.length > 0 && (
+              <TouchableOpacity onPress={goBackToHome} style={styles.backBtn}>
+                <Text style={styles.backBtnText}>← Back</Text>
+              </TouchableOpacity>
+            )}
         <View style={styles.headerInfo}>
           <Text style={styles.headerStatus}>
             {isSpeaking ? '🔊 Speaking...' : ''}
           </Text>
         </View>
-        <TouchableOpacity onPress={clearConversation} style={styles.clearBtn}>
-          <Text style={styles.clearBtnText}>Clear</Text>
-        </TouchableOpacity>
       </View>
 
       {/* Chat Messages */}
@@ -335,47 +351,26 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
           contentContainerStyle={styles.messagesContent}
         >
           {messages.length === 0 ? (
-            <View style={styles.welcomeContainer}>
-              <View style={styles.imageContainer}>
-                {/* First Lincoln image - fades out and slides down */}
-                <Animated.Image 
-                  source={require('@/lincoln.png')}
-                  style={[
-                    styles.welcomeImage,
-                    { 
-                      opacity: firstImageOpacity,
-                      transform: [
-                        {
-                          translateY: imageSlideDown.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0, 800]
-                          })
-                        }
-                      ]
-                    }
-                  ]}
-                />
-                
-                {/* Second Lincoln image (palm up) - fades in and slides down */}
-                <Animated.Image 
-                  source={require('@/linconl_palm_up.png')}
-                  style={[
-                    styles.welcomeImage,
-                    { 
-                      opacity: secondImageOpacity,
-                      transform: [
-                        {
-                          translateY: imageSlideDown.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0, 800]
-                          })
-                        }
-                      ]
-                    }
-                  ]}
-                />
-                
-              </View>
+              <View style={styles.welcomeContainer}>
+                <View style={styles.imageContainer}>
+                  {/* Lincoln image - slides down */}
+                  <Animated.Image 
+                    source={require('@/lincoln.png')}
+                    style={[
+                      styles.welcomeImage,
+                      { 
+                        transform: [
+                          {
+                            translateY: imageSlideDown.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0, 800]
+                            })
+                          }
+                        ]
+                      }
+                    ]}
+                  />
+                </View>
               
               <Animated.View style={[
                 styles.buttonContainer,
@@ -407,9 +402,21 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
                 </TouchableOpacity>
               </Animated.View>
             </View>
-          ) : (
-            <>
-              {messages.map((message) => (
+            ) : (
+              <Animated.View style={[
+                styles.chatContainer,
+                {
+                  transform: [
+                    {
+                      translateY: chatSlideIn.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-100, 0] // Start above screen, slide down to normal position
+                      })
+                    }
+                  ]
+                }
+              ]}>
+                {messages.map((message) => (
                 <View
                   key={message.id}
                   style={[
@@ -445,37 +452,39 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
                 </View>
               ))}
               
-              {isLoading && <TypingIndicator />}
-            </>
-          )}
+                {isLoading && messages.length > 0 && <TypingIndicator />}
+              </Animated.View>
+            )}
         </ScrollView>
       </View>
 
-      {/* Input Area */}
-      <View style={styles.inputContainer}>
-        <View style={styles.inputWrapper}>
-          <TextInput
-            style={styles.textInput}
-            placeholder="Type your message..."
-            placeholderTextColor="#999"
-            value={inputText}
-            onChangeText={setInputText}
-            multiline
-            maxLength={500}
-            editable={!isLoading}
-          />
-          <TouchableOpacity
-            style={[
-              styles.sendButton,
-              (!inputText.trim() || isLoading) && styles.disabledSendButton,
-            ]}
-            onPress={sendMessage}
-            disabled={!inputText.trim() || isLoading}
-          >
-            <Text style={styles.sendButtonText}>Send</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+          {/* Input Area - Only show when in chat mode */}
+          {messages.length > 0 && (
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Type your message..."
+                  placeholderTextColor="#999"
+                  value={inputText}
+                  onChangeText={setInputText}
+                  multiline
+                  maxLength={500}
+                  editable={!isLoading}
+                />
+                <TouchableOpacity
+                  style={[
+                    styles.sendButton,
+                    (!inputText.trim() || isLoading) && styles.disabledSendButton,
+                  ]}
+                  onPress={sendMessage}
+                  disabled={!inputText.trim() || isLoading}
+                >
+                  <Text style={styles.sendButtonText}>Send</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
     </KeyboardAvoidingView>
   );
 }
@@ -550,17 +559,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  clearBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#e74c3c',
-    borderRadius: 16,
-  },
-  clearBtnText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
   messagesContainer: {
     flex: 1,
     backgroundColor: '#ffffff',
@@ -569,22 +567,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 20,
   },
+  chatContainer: {
+    flex: 1,
+  },
   welcomeContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
-    paddingTop: 200,
-    paddingBottom: 150,
+    paddingTop: 920,
+    paddingBottom: 10,
   },
   imageContainer: {
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 140,
+    marginBottom: 350,
   },
   welcomeImage: {
-    width: 300,
-    height: 300,
+    width: 350,
+    height: 350,
     resizeMode: 'contain',
     position: 'absolute',
   },
