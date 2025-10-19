@@ -34,6 +34,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showPalmUp, setShowPalmUp] = useState(false);
+  const [showPhoneImage, setShowPhoneImage] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const typingAnimation = new Animated.Value(0);
@@ -41,6 +42,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
   // Animation for crossfade between images
   const firstImageOpacity = useRef(new Animated.Value(1)).current;
   const secondImageOpacity = useRef(new Animated.Value(0)).current;
+  const phoneImageOpacity = useRef(new Animated.Value(0)).current;
   
   // Animation for slide down
   const imageSlideDown = useRef(new Animated.Value(0)).current;
@@ -235,8 +237,10 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
   const clearConversation = () => {
     setMessages([]);
     setShowPalmUp(false);
+    setShowPhoneImage(false);
     firstImageOpacity.setValue(1);
     secondImageOpacity.setValue(0);
+    phoneImageOpacity.setValue(0);
     imageSlideDown.setValue(0);
     chatSlideIn.setValue(0);
     Speech.stop();
@@ -252,6 +256,14 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
 
 
   const callAbe = async () => {
+    // Transition to phone image
+    setShowPhoneImage(true);
+    Animated.timing(phoneImageOpacity, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+    
     const phoneNumber = '+19896606519'; // Your VAPI phone number
     const phoneUrl = `tel:${phoneNumber}`;
     
@@ -359,6 +371,26 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
                     style={[
                       styles.welcomeImage,
                       { 
+                        opacity: showPhoneImage ? 0 : 1,
+                        transform: [
+                          {
+                            translateY: imageSlideDown.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0, 800]
+                            })
+                          }
+                        ]
+                      }
+                    ]}
+                  />
+                  
+                  {/* Lincoln phone image */}
+                  <Animated.Image 
+                    source={require('@/lincolnphone.png')}
+                    style={[
+                      styles.welcomeImage,
+                      { 
+                        opacity: phoneImageOpacity,
                         transform: [
                           {
                             translateY: imageSlideDown.interpolate({
@@ -584,8 +616,8 @@ const styles = StyleSheet.create({
     marginBottom: 350,
   },
   welcomeImage: {
-    width: 350,
-    height: 350,
+    width: 400,
+    height: 400,
     resizeMode: 'contain',
     position: 'absolute',
   },
@@ -640,13 +672,13 @@ const styles = StyleSheet.create({
   assistantMessageContainer: {
     justifyContent: 'flex-start',
   },
-  messageAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 4,
-  },
+      messageAvatar: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        marginRight: 8,
+        marginBottom: 4,
+      },
   userAvatar: {
     width: 32,
     height: 32,
