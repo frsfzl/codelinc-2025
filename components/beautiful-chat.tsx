@@ -47,6 +47,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
   // Animation for slide down
   const imageSlideDown = useRef(new Animated.Value(0)).current;
   const chatSlideIn = useRef(new Animated.Value(0)).current;
+  const titleSlideUp = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -159,30 +160,37 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
     console.log('Starting crossfade animation...');
     setIsLoading(true);
     
-    // Step 1: Crossfade to palm up image
-    // First image fades out while second image fades in simultaneously
-    Animated.parallel([
-      Animated.timing(firstImageOpacity, {
-        toValue: 0,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-      Animated.timing(secondImageOpacity, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      })
-    ]).start(() => {
+    // Wait 2.5 seconds before starting animations
+    setTimeout(() => {
+      // Step 1: Crossfade to palm up image
+      Animated.parallel([
+        Animated.timing(firstImageOpacity, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(secondImageOpacity, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        })
+      ]).start(() => {
       console.log('Crossfade complete, starting slide down animation...');
       
-      // Step 2: Lincoln slides down out of screen while message slides in from top
+      // Step 2: Lincoln slides down and title slides up at the same time
       setTimeout(() => {
-        // Lincoln slides down and out of screen
-        Animated.timing(imageSlideDown, {
-          toValue: 1,
-          duration: 1500,
-          useNativeDriver: true,
-        }).start(() => {
+        Animated.parallel([
+          Animated.timing(imageSlideDown, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(titleSlideUp, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: true,
+          })
+        ]).start(() => {
           console.log('Slide animation complete, starting conversation...');
           
               // Step 3: Slide in the chat interface from top
@@ -231,7 +239,8 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
               }, 300); // Small delay before chat slides in
         });
       }, 800); // Delay to show the palm up image before sliding
-    });
+      });
+    }, 100); // 0.1-second delay before starting animations
   };
 
   const clearConversation = () => {
@@ -243,6 +252,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
     phoneImageOpacity.setValue(0);
     imageSlideDown.setValue(0);
     chatSlideIn.setValue(0);
+    titleSlideUp.setValue(0);
     Speech.stop();
   };
 
@@ -263,6 +273,16 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
       duration: 500,
       useNativeDriver: true,
     }).start();
+    
+    // Revert back to normal sprite after 3 seconds
+    setTimeout(() => {
+      setShowPhoneImage(false);
+      Animated.timing(phoneImageOpacity, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    }, 3000);
     
     const phoneNumber = '+19896606519'; // Your VAPI phone number
     const phoneUrl = `tel:${phoneNumber}`;
@@ -364,6 +384,24 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
         >
           {messages.length === 0 ? (
               <View style={styles.welcomeContainer}>
+                <Animated.View style={[
+                  styles.titleContainer,
+                  {
+                    transform: [
+                      {
+                        translateY: titleSlideUp.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0, -400]
+                        })
+                      }
+                    ]
+                  }
+                ]}>
+                  <Text style={styles.titleText}>
+                    <Text style={styles.financialText}>Financial</Text>
+                    <Text style={styles.abeText}>{"\n"}Abe.</Text>
+                  </Text>
+                </Animated.View>
                 <View style={styles.imageContainer}>
                   {/* Lincoln image - slides down */}
                   <Animated.Image 
@@ -570,7 +608,7 @@ const styles = StyleSheet.create({
   backBtn: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: '#34495e',
+    backgroundColor: '#231F20',
     borderRadius: 16,
     marginRight: 12,
   },
@@ -609,11 +647,30 @@ const styles = StyleSheet.create({
     paddingTop: 920,
     paddingBottom: 10,
   },
+  titleContainer: {
+    alignItems: 'center',
+    marginBottom: 210,
+  },
+titleText: {
+  textAlign: 'center',
+  fontSize: 32,
+  fontWeight: 'bold',
+},
+  financialText: {
+    fontSize: 48,
+    fontWeight: '900',
+    color: '#231F20',
+  },
+  abeText: {
+    fontSize: 68,
+    fontWeight: '900',
+    color: '#98012E',
+  },
   imageContainer: {
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 350,
+    marginBottom: 250,
   },
   welcomeImage: {
     width: 400,
@@ -626,11 +683,11 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   callButton: {
-    backgroundColor: '#27ae60',
+    backgroundColor: '#98012E',
     paddingHorizontal: 25,
     paddingVertical: 15,
     borderRadius: 25,
-    shadowColor: '#27ae60',
+    shadowColor: '#98012E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -644,11 +701,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   chatButton: {
-    backgroundColor: '#3498db',
+    backgroundColor: '#231F20',
     paddingHorizontal: 25,
     paddingVertical: 15,
     borderRadius: 25,
-    shadowColor: '#3498db',
+    shadowColor: '#231F20',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -683,7 +740,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#3498db',
+    backgroundColor: '#98012E',
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 8,
@@ -706,7 +763,7 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   userBubble: {
-    backgroundColor: '#3498db',
+    backgroundColor: '#98012E',
     borderBottomRightRadius: 4,
   },
   assistantBubble: {
@@ -794,7 +851,7 @@ const styles = StyleSheet.create({
     maxHeight: 100,
   },
   sendButton: {
-    backgroundColor: '#3498db',
+    backgroundColor: '#98012E',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 20,

@@ -140,12 +140,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   header: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#98012E',
     paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e8ed',
+    borderBottomColor: '#231F20',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#202124',
+    color: '#ffffff',
     textAlign: 'center',
   },
   scrollView: {
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#202124',
+    color: '#98012E',
   },
   optionsContainer: {
     paddingVertical: 8,
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   optionButtonText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#202124',
+    color: '#231F20',
     marginBottom: 2,
   },
   optionDescription: {
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   noProfileText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#202124',
+    color: '#231F20',
     marginBottom: 4,
   },
   noProfileDescription: {
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   },
   infoValue: {
     fontSize: 14,
-    color: '#202124',
+    color: '#231F20',
     fontWeight: '500',
   },
 });

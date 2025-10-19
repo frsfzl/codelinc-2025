@@ -122,7 +122,7 @@ export default function ActivityScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeContainer: { flex: 1, backgroundColor: '#0F1720' },
+  safeContainer: { flex: 1, backgroundColor: '#231F20' },
   container: { flex: 1 },
   header: {
     flexDirection: 'row',

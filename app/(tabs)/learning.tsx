@@ -147,7 +147,7 @@ export default function LearningScreen() {
           </ThemedText>
           
           <TouchableOpacity
-            style={[styles.simulatorButton, { backgroundColor: 'black', borderColor: 'white' }]}
+            style={[styles.simulatorButton, { backgroundColor: '#98012E', borderColor: '#231F20' }]}
             onPress={() => router.push('/(tabs)/investing')}
             activeOpacity={0.8}
           >

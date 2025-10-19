@@ -475,7 +475,7 @@ export default function BudgetingBasicsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeContainer: { flex: 1, backgroundColor: '#0F1720' },
+  safeContainer: { flex: 1, backgroundColor: '#231F20' },
   container: { flex: 1 },
   header: {
     flexDirection: 'row',
@@ -611,7 +611,7 @@ const styles = StyleSheet.create({
   },
   scoreText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
   activityButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#98012E',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
