@@ -7,6 +7,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import React from 'react';
 import { Alert, Image, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { getBalance, setBalance } from '@/utils/storage';
 
 const modules = [
   {
@@ -36,16 +37,28 @@ export default function LearningScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const backgroundColor = useThemeColor({}, 'background');
-  const [balance, setBalance] = React.useState(0);
+  const [balance, setBalanceState] = React.useState(0);
   const [showModules, setShowModules] = React.useState(false);
   const params = useLocalSearchParams();
 
   useFocusEffect(
     React.useCallback(() => {
+      const loadBalance = async () => {
+        const savedBalance = await getBalance();
+        setBalanceState(savedBalance);
+      };
+      loadBalance();
+      
       if (params.coins !== undefined && params.coins !== '') {
         const newCoins = parseInt(params.coins as string, 10);
         if (!isNaN(newCoins)) {
-          setBalance(prevBalance => prevBalance + newCoins);
+          const updateBalance = async () => {
+            const currentBalance = await getBalance();
+            const newBalance = currentBalance + newCoins;
+            await setBalance(newBalance);
+            setBalanceState(newBalance);
+          };
+          updateBalance();
         }
         router.setParams({ coins: '' });
       }
@@ -55,9 +68,19 @@ export default function LearningScreen() {
   const handleModulePress = (moduleTitle: string) => {
     if (moduleTitle === 'Budgeting Basics') {
       router.push({ pathname: '/(tabs)/budgeting-basics', params: { reset: 'true' } });
+    } else if (moduleTitle === 'Emergency Savings' || moduleTitle === 'Debt Management') {
+      Alert.alert('Coming Soon', `${moduleTitle} module is coming soon!`);
     } else {
       Alert.alert('Module Selected', `You selected: ${moduleTitle}`);
     }
+  };
+
+  const addTestPennies = async () => {
+    const currentBalance = await getBalance();
+    const newBalance = currentBalance + 1000;
+    await setBalance(newBalance);
+    setBalanceState(newBalance);
+    Alert.alert('Success', 'Added 1000 pennies for testing!');
   };
 
   return (
@@ -69,7 +92,12 @@ export default function LearningScreen() {
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.balanceSection}>
-          <ThemedText style={styles.balanceTitle}>Balance</ThemedText>
+          <View style={styles.balanceHeader}>
+            <ThemedText style={styles.balanceTitle}>Balance</ThemedText>
+            <TouchableOpacity style={styles.testButton} onPress={addTestPennies}>
+              <ThemedText style={styles.testButtonText}>+1000</ThemedText>
+            </TouchableOpacity>
+          </View>
           <View style={styles.balanceRow}>
             <Image source={require('@/assets/images/penny.png')} style={styles.balancePenny} />
             <ThemedText style={styles.balanceAmount}>{balance}</ThemedText>
@@ -117,6 +145,21 @@ export default function LearningScreen() {
             </>
           )}
         </View>
+        
+        <TouchableOpacity
+          style={[styles.investButton, { borderColor: colors.tint }]}
+          onPress={() => router.push('/(tabs)/investing')}
+          activeOpacity={0.8}
+        >
+          <View style={styles.investContent}>
+            <IconSymbol name="chart.line.uptrend.xyaxis" size={24} color={colors.tint} />
+            <View style={styles.investText}>
+              <ThemedText style={styles.investTitle}>Start Investing</ThemedText>
+              <ThemedText style={styles.investSubtitle}>Grow your money with smart investments</ThemedText>
+            </View>
+            <IconSymbol name="chevron.right" size={20} color={colors.icon} />
+          </View>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -149,10 +192,27 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     marginBottom: 20,
   },
+  balanceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 12,
+  },
   balanceTitle: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12,
+  },
+  testButton: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  testButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
   },
   balanceRow: {
     flexDirection: 'row',
@@ -221,5 +281,30 @@ const styles = StyleSheet.create({
     fontSize: 12,
     opacity: 0.7,
     lineHeight: 16,
+  },
+  investButton: {
+    borderRadius: 16,
+    borderWidth: 1,
+    backgroundColor: 'transparent',
+    marginTop: 16,
+    marginBottom: 20,
+  },
+  investContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+  },
+  investText: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  investTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  investSubtitle: {
+    fontSize: 12,
+    opacity: 0.7,
   },
 });
