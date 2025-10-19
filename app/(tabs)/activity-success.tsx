@@ -15,7 +15,7 @@ export default function ActivitySuccessScreen() {
           <ThemedText style={styles.title}>🎉 Congratulations!</ThemedText>
           
           <ThemedText style={styles.message}>
-            You successfully completed all the budgeting activities and still have money left over!
+            You successfully completed all the budgeting activities and still have money left over! The remaining coins will be added to your balance!
           </ThemedText>
 
           <View style={styles.coinDisplay}>

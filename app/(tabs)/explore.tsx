@@ -1,5 +1,6 @@
 import ProfileSettings from '@/components/profile-settings';
 import database from '@/services/database';
+import { setBalance } from '@/utils/storage';
 import React, { useEffect, useState } from 'react';
 import {
     Alert,
@@ -39,6 +40,7 @@ export default function SettingsScreen() {
           onPress: async () => {
             try {
               await database.deleteUserProfile();
+              await setBalance(0);
               setHasProfile(false);
               Alert.alert('Success', 'Profile has been reset.');
             } catch (error) {

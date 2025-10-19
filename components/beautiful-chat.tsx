@@ -262,6 +262,15 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
+    // Reset chat state to show welcome screen
+    setMessages([]);
+    setIsLoading(false);
+    firstImageOpacity.setValue(1);
+    secondImageOpacity.setValue(0);
+    phoneImageOpacity.setValue(0);
+    imageSlideDown.setValue(0);
+    chatSlideIn.setValue(0);
+    titleSlideUp.setValue(0);
   };
 
 
@@ -497,7 +506,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
                   {!message.isUser && (
                     <Image 
                       source={require('@/lincoln.png')}
-                      style={styles.messageAvatar}
+                      style={styles.miniAbeSprite}
                     />
                   )}
                   <View
@@ -729,12 +738,12 @@ titleText: {
   assistantMessageContainer: {
     justifyContent: 'flex-start',
   },
-      messageAvatar: {
-        width: 24,
-        height: 24,
-        borderRadius: 12,
+      miniAbeSprite: {
+        width: 32,
+        height: 32,
         marginRight: 8,
         marginBottom: 4,
+        resizeMode: 'contain',
       },
   userAvatar: {
     width: 32,

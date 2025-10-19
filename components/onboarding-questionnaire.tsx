@@ -1,15 +1,15 @@
 import database, { UserProfile } from '@/services/database';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 interface OnboardingQuestionnaireProps {
@@ -334,6 +334,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   title: {
+    paddingTop: 50,
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',

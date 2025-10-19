@@ -1,11 +1,11 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
-import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View, Animated, Image, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useFocusEffect } from '@react-navigation/native';
 import { router, useLocalSearchParams } from 'expo-router';
+import React, { useMemo, useRef, useState } from 'react';
+import { Alert, Animated, Image, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 const ARTICLE_MARKDOWN = `# Budgeting Basics: The Foundation of Financial Freedom
 
@@ -462,7 +462,7 @@ export default function BudgetingBasicsScreen() {
               onPress={() => router.push({ pathname: '/(tabs)/activity', params: { coins: coins.toString() } })}
             >
               <ThemedText style={styles.activityButtonText}>
-                {answeredQuestions === 0 ? 'Begin Activity' : 'Finish Activity'}
+                {answeredQuestions === 0 ? 'Begin Activity' : 'Begin Activity'}
               </ThemedText>
             </TouchableOpacity>
           </View>
