@@ -1,3 +1,4 @@
+import bedrockChat from '@/services/bedrock-chat';
 import * as Speech from 'expo-speech';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -91,37 +92,9 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://api.vapi.ai/chat', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer d11280bb-c28a-4a43-976a-396214db773a',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          assistantId: assistantId,
-          input: currentInput,
-        }),
-      });
-
-      let aiResponse = '';
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log('VAPI chat response:', result);
-        
-        if (result.output && result.output.length > 0) {
-          const lastOutput = result.output[result.output.length - 1];
-          aiResponse = lastOutput.content || lastOutput.message || 'I understand your message. How can I help you further?';
-        } else if (result.message) {
-          aiResponse = result.message;
-        } else {
-          aiResponse = 'I understand your message. How can I help you further?';
-        }
-      } else {
-        const errorText = await response.text();
-        console.error('VAPI API error:', response.status, errorText);
-        aiResponse = `I received your message: "${currentInput}". How can I help you with that?`;
-      }
+      console.log('Querying Bedrock KB with:', currentInput);
+      const aiResponse = await bedrockChat.chat(currentInput);
+      console.log('Bedrock KB response:', aiResponse);
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -134,11 +107,11 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
       await speakText(aiResponse);
 
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error querying Bedrock KB:', error);
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "I'm sorry, I'm having trouble processing your message right now. Please try again.",
+        text: "I'm sorry, I'm having trouble accessing my knowledge base right now. Please try again.",
         isUser: false,
         timestamp: new Date(),
       };
@@ -156,43 +129,15 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
     setIsLoading(true);
     
     try {
-      const response = await fetch('https://api.vapi.ai/chat', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer d11280bb-c28a-4a43-976a-396214db773a',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          assistantId: assistantId,
-          input: "Hello! Start the conversation.",
-        }),
-      });
-
-      let firstMessage = "Hi! I'm Abe, your AI assistant. How can I help you today?";
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log('VAPI initial chat response:', result);
-        
-        if (result.output && result.output.length > 0) {
-          const lastOutput = result.output[result.output.length - 1];
-          firstMessage = lastOutput.content || lastOutput.message || firstMessage;
-        } else if (result.message) {
-          firstMessage = result.message;
-        }
-      } else {
-        console.error('VAPI initial chat error:', response.status);
-      }
-
       const welcomeMessage: Message = {
         id: Date.now().toString(),
-        text: firstMessage,
+        text: "Hi! I'm Abe, your AI assistant powered by Lincoln Financial's knowledge base. I can help you with questions about financial planning, retirement, insurance, and more. What would you like to know?",
         isUser: false,
         timestamp: new Date(),
       };
 
       setMessages([welcomeMessage]);
-      await speakText(firstMessage);
+      await speakText(welcomeMessage.text);
 
     } catch (error) {
       console.error('Error starting conversation:', error);
@@ -292,7 +237,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
             />
             <Text style={styles.welcomeTitle}>Welcome to Abe Chat!</Text>
             <Text style={styles.welcomeSubtitle}>
-              Your AI assistant is ready to help you with any questions or tasks.
+              Your AI assistant powered by Lincoln Financial's knowledge base. Ask me about financial planning, retirement, insurance, and more!
             </Text>
             <TouchableOpacity
               style={[styles.startButton, isLoading && styles.disabledButton]}
