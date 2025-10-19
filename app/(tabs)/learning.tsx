@@ -4,10 +4,10 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { getBalance, setBalance } from '@/utils/storage';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { Alert, Image, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { getBalance, setBalance } from '@/utils/storage';
 
 const modules = [
   {
@@ -49,18 +49,16 @@ export default function LearningScreen() {
       };
       loadBalance();
       
-      if (params.coins !== undefined && params.coins !== '') {
-        const newCoins = parseInt(params.coins as string, 10);
-        if (!isNaN(newCoins)) {
+      if (params.finalCoins !== undefined && params.finalCoins !== '') {
+        const finalCoins = parseInt(params.finalCoins as string, 10);
+        if (!isNaN(finalCoins)) {
           const updateBalance = async () => {
-            const currentBalance = await getBalance();
-            const newBalance = currentBalance + newCoins;
-            await setBalance(newBalance);
-            setBalanceState(newBalance);
+            await setBalance(finalCoins);
+            setBalanceState(finalCoins);
           };
           updateBalance();
         }
-        router.setParams({ coins: '' });
+        router.setParams({ finalCoins: '' });
       }
     }, [params])
   );
@@ -75,13 +73,7 @@ export default function LearningScreen() {
     }
   };
 
-  const addTestPennies = async () => {
-    const currentBalance = await getBalance();
-    const newBalance = currentBalance + 1000;
-    await setBalance(newBalance);
-    setBalanceState(newBalance);
-    Alert.alert('Success', 'Added 1000 pennies for testing!');
-  };
+
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
@@ -92,12 +84,7 @@ export default function LearningScreen() {
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.balanceSection}>
-          <View style={styles.balanceHeader}>
-            <ThemedText style={styles.balanceTitle}>Balance</ThemedText>
-            <TouchableOpacity style={styles.testButton} onPress={addTestPennies}>
-              <ThemedText style={styles.testButtonText}>+1000</ThemedText>
-            </TouchableOpacity>
-          </View>
+          <ThemedText style={styles.balanceTitle}>Balance</ThemedText>
           <View style={styles.balanceRow}>
             <Image source={require('@/assets/images/penny.png')} style={styles.balancePenny} />
             <ThemedText style={styles.balanceAmount}>{balance}</ThemedText>
@@ -201,28 +188,12 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     marginBottom: 20,
   },
-  balanceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 12,
-  },
+
   balanceTitle: {
     fontSize: 18,
     fontWeight: '600',
   },
-  testButton: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  testButtonText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-  },
+
   balanceRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -338,4 +309,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+
 });

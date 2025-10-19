@@ -27,10 +27,10 @@ export default function ActivitySuccessScreen() {
           <TouchableOpacity
             style={styles.continueButton}
             onPress={() => {
-              router.push('/(tabs)/budgeting-basics?reset=true');
-              setTimeout(() => {
-                router.push('/(tabs)/learning');
-              }, 100);
+              router.push({
+                pathname: '/(tabs)/learning',
+                params: { finalCoins: finalCoins.toString() }
+              });
             }}
           >
             <ThemedText style={styles.continueButtonText}>Continue Learning</ThemedText>

@@ -4,7 +4,7 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { getBalance } from '@/utils/storage';
-import { router, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Alert,
@@ -62,7 +62,12 @@ const INVESTMENT_OPTIONS: InvestmentOption[] = [
   },
 ];
 
-type Step = 'allocate' | 'years' | 'results';
+type Step = 'allocate' | 'years' | 'results' | 'graph';
+
+interface GraphData {
+  investment: SimulationResult;
+  yearlyData: { year: number; value: number }[];
+}
 
 export default function InvestingScreen() {
   const colorScheme = useColorScheme();
@@ -74,6 +79,7 @@ export default function InvestingScreen() {
   const [years, setYears] = useState('');
   const [results, setResults] = useState<SimulationResult[]>([]);
   const [balance, setBalance] = useState(0);
+  const [graphData, setGraphData] = useState<GraphData | null>(null);
   
   useFocusEffect(
     React.useCallback(() => {
@@ -143,6 +149,22 @@ export default function InvestingScreen() {
     setOptions(INVESTMENT_OPTIONS);
     setYears('');
     setResults([]);
+    setGraphData(null);
+  };
+
+  const generateGraphData = (investment: SimulationResult): GraphData => {
+    const yearsNum = parseInt(years);
+    const yearlyData = [];
+    for (let year = 0; year <= yearsNum; year++) {
+      const value = calculateGrowth(investment.option.allocation, investment.option.rate, year);
+      yearlyData.push({ year, value });
+    }
+    return { investment, yearlyData };
+  };
+
+  const showGraph = (investment: SimulationResult) => {
+    setGraphData(generateGraphData(investment));
+    setStep('graph');
   };
 
   const totalFutureValue = results.reduce((sum, result) => sum + result.futureValue, 0);
@@ -150,16 +172,6 @@ export default function InvestingScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <IconSymbol name="chevron.left" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <ThemedText style={styles.title}>Investment Simulator</ThemedText>
-      </View>
-
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {step === 'allocate' && (
           <>
@@ -289,6 +301,7 @@ export default function InvestingScreen() {
               <ThemedText style={[styles.gainsText, { color: '#4CAF50' }]}>
                 +{Math.round(totalGains)} gains
               </ThemedText>
+
             </View>
 
             <ThemedText style={styles.breakdownTitle}>Investment Breakdown</ThemedText>
@@ -305,12 +318,21 @@ export default function InvestingScreen() {
                   </View>
                 </View>
                 <View style={styles.resultDetails}>
-                  <ThemedText style={styles.originalAmount}>
-                    Original: {result.option.allocation}
-                  </ThemedText>
-                  <ThemedText style={[styles.gainAmount, { color: '#4CAF50' }]}>
-                    +{Math.round(result.gains)}
-                  </ThemedText>
+                  <View>
+                    <ThemedText style={styles.originalAmount}>
+                      Original: {result.option.allocation}
+                    </ThemedText>
+                    <ThemedText style={[styles.gainAmount, { color: '#4CAF50' }]}>
+                      +{Math.round(result.gains)}
+                    </ThemedText>
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.smallGraphButton, { borderColor: colors.tint }]}
+                    onPress={() => showGraph(result)}
+                  >
+                    <IconSymbol name="chart.line.uptrend.xyaxis" size={12} color={colors.tint} />
+                    <ThemedText style={[styles.smallGraphButtonText, { color: colors.tint }]}>Graph</ThemedText>
+                  </TouchableOpacity>
                 </View>
               </View>
             ))}
@@ -320,6 +342,107 @@ export default function InvestingScreen() {
               onPress={resetSimulation}
             >
               <ThemedText style={[styles.buttonText, { color: 'black' }]}>Try Again</ThemedText>
+            </TouchableOpacity>
+          </>
+        )}
+
+        {step === 'graph' && graphData && (
+          <>
+            <View style={styles.graphHeaderCenter}>
+              <ThemedText style={styles.graphTitle}>{graphData.investment.option.title} Growth</ThemedText>
+            </View>
+
+            <View style={[styles.graphCard, { borderColor: colors.tint }]}>
+              <ThemedText style={styles.graphSubtitle}>Value Over {years} Years</ThemedText>
+              
+              <View style={styles.chartContainer}>
+                <View style={styles.yAxis}>
+                  {[4, 3, 2, 1, 0].map(i => {
+                    const isTotal = graphData.investment.option.id === 'total';
+                    if (isTotal) {
+                      const minValue = totalAllocated;
+                      const maxValue = Math.max(...graphData.yearlyData.map(d => d.value));
+                      const range = maxValue - minValue;
+                      const value = minValue + (range * i) / 4;
+                      return (
+                        <ThemedText key={i} style={styles.yAxisLabel}>
+                          {Math.round(value)}
+                        </ThemedText>
+                      );
+                    } else {
+                      const maxValue = Math.max(...graphData.yearlyData.map(d => d.value));
+                      const value = (maxValue * i) / 4;
+                      return (
+                        <ThemedText key={i} style={styles.yAxisLabel}>
+                          {Math.round(value)}
+                        </ThemedText>
+                      );
+                    }
+                  })}
+                </View>
+                
+                <View style={styles.chartArea}>
+                  <View style={[styles.chartBackground, { borderColor: colors.tint }]}>
+                    {graphData.yearlyData.map((point, index) => {
+                      const isTotal = graphData.investment.option.id === 'total';
+                      let height;
+                      if (isTotal) {
+                        const minValue = totalAllocated;
+                        const maxValue = Math.max(...graphData.yearlyData.map(d => d.value));
+                        const range = maxValue - minValue;
+                        height = ((point.value - minValue) / range) * 120;
+                      } else {
+                        const maxValue = Math.max(...graphData.yearlyData.map(d => d.value));
+                        height = (point.value / maxValue) * 120;
+                      }
+                      const left = (index / (graphData.yearlyData.length - 1)) * 250;
+                      return (
+                        <View
+                          key={index}
+                          style={[
+                            styles.dataPoint,
+                            {
+                              left,
+                              bottom: height,
+                              backgroundColor: colors.tint,
+                            }
+                          ]}
+                        />
+                      );
+                    })}
+                  </View>
+                  
+                  <View style={styles.xAxis}>
+                    {[0, Math.floor(parseInt(years) / 2), parseInt(years)].map(year => (
+                      <ThemedText key={year} style={styles.xAxisLabel}>
+                        {year}y
+                      </ThemedText>
+                    ))}
+                  </View>
+                </View>
+              </View>
+              
+              <View style={styles.graphStats}>
+                <View style={styles.statItem}>
+                  <ThemedText style={styles.statLabel}>Initial</ThemedText>
+                  <ThemedText style={styles.statValue}>{graphData.investment.option.allocation}</ThemedText>
+                </View>
+                <View style={styles.statItem}>
+                  <ThemedText style={styles.statLabel}>Final</ThemedText>
+                  <ThemedText style={styles.statValue}>{Math.round(graphData.investment.futureValue)}</ThemedText>
+                </View>
+                <View style={styles.statItem}>
+                  <ThemedText style={styles.statLabel}>Growth</ThemedText>
+                  <ThemedText style={[styles.statValue, { color: '#4CAF50' }]}>+{Math.round(graphData.investment.gains)}</ThemedText>
+                </View>
+              </View>
+            </View>
+            
+            <TouchableOpacity
+              style={[styles.backButtonGraph, { backgroundColor: colors.tint }]}
+              onPress={() => setStep('results')}
+            >
+              <ThemedText style={[styles.buttonText, { color: 'black' }]}>Back to Results</ThemedText>
             </TouchableOpacity>
           </>
         )}
@@ -372,7 +495,8 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 20,
+    paddingTop: 10,
+    fontSize: 28,
     fontWeight: '700',
     marginBottom: 16,
   },
@@ -484,6 +608,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   resultsHeader: {
+    paddingTop: 30,
     alignItems: 'center',
     marginBottom: 24,
   },
@@ -561,6 +686,115 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   resetButton: {
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 40,
+  },
+  graphButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginTop: 12,
+    gap: 6,
+  },
+  graphButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  smallGraphButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    gap: 4,
+  },
+  smallGraphButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  graphHeaderCenter: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  graphTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginLeft: 10,
+  },
+  graphCard: {
+    borderRadius: 16,
+    borderWidth: 2,
+    padding: 20,
+    marginBottom: 20,
+  },
+  graphSubtitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  chartContainer: {
+    flexDirection: 'row',
+    height: 160,
+    marginBottom: 20,
+  },
+  yAxis: {
+    width: 40,
+    justifyContent: 'space-between',
+    paddingRight: 8,
+  },
+  yAxisLabel: {
+    fontSize: 10,
+    textAlign: 'right',
+  },
+  chartArea: {
+    flex: 1,
+  },
+  chartBackground: {
+    height: 120,
+    borderWidth: 1,
+    borderRadius: 8,
+    position: 'relative',
+  },
+  dataPoint: {
+    position: 'absolute',
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  xAxis: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  xAxisLabel: {
+    fontSize: 10,
+  },
+  graphStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statLabel: {
+    fontSize: 12,
+    opacity: 0.7,
+  },
+  statValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  backButtonGraph: {
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
