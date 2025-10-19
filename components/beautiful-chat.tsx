@@ -343,7 +343,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
   const TypingIndicator = () => (
     <View style={styles.typingContainer}>
       <Image 
-        source={require('@/lincoln.png')}
+        source={require('@/assets/images/lincoln.png')}
         style={styles.avatar}
       />
       <View style={styles.typingBubble}>
@@ -414,7 +414,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
                 <View style={styles.imageContainer}>
                   {/* Lincoln image - slides down */}
                   <Animated.Image 
-                    source={require('@/lincoln.png')}
+                    source={require('@/assets/images/lincoln.png')}
                     style={[
                       styles.welcomeImage,
                       { 
@@ -433,7 +433,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
                   
                   {/* Lincoln phone image */}
                   <Animated.Image 
-                    source={require('@/lincolnphone.png')}
+                    source={require('@/assets/images/lincolnphone.png')}
                     style={[
                       styles.welcomeImage,
                       { 
@@ -505,7 +505,7 @@ export default function BeautifulChat({ assistantId }: BeautifulChatProps) {
                 >
                   {!message.isUser && (
                     <Image 
-                      source={require('@/lincoln.png')}
+                      source={require('@/assets/images/lincoln.png')}
                       style={styles.miniAbeSprite}
                     />
                   )}
